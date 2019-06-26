@@ -20,7 +20,11 @@ final class ViewController: UIViewController {
 	lazy var imageView = with(UIImageView()) {
 		$0.image = UIImage(color: .black, size: view.frame.size)
 		$0.contentMode = .scaleAspectFill
-		$0.clipsToBounds = true
+		$0.isUserInteractionEnabled = true
+		$0.clipsToBounds = false
+		let pinchGesture = UIPinchGestureRecognizer(target: self, action: #selector(handlePinchGesture))
+		pinchGesture.scale = 1.0
+		$0.addGestureRecognizer(pinchGesture)
 		$0.frame = view.bounds
 	}
 
@@ -55,6 +59,14 @@ final class ViewController: UIViewController {
 			randomImage()
 		}
 	}
+	
+	@objc fileprivate func handlePinchGesture(sender: UIPinchGestureRecognizer) {
+		guard let transformedView = (sender.view?.transform.scaledBy(x: sender.scale, y: sender.scale)) else {
+			return
+		}
+		sender.view?.transform = transformedView
+		sender.scale = 1.0
+	}
 
 	override func viewDidLoad() {
 		super.viewDidLoad()
@@ -63,8 +75,8 @@ final class ViewController: UIViewController {
 		// since we're using `DispatchQueue.global().async` the order of events aren't serial
 		delayedAction = IIDelayedAction({}, withDelay: 0.2)
 		delayedAction?.onMainThread = false
-
 		view.addSubview(imageView)
+		self.view.isUserInteractionEnabled = true
 
 		let TOOLBAR_HEIGHT: CGFloat = 80 + window.safeAreaInsets.bottom
 		let toolbar = UIToolbar(frame: CGRect(x: 0, y: view.frame.size.height - TOOLBAR_HEIGHT, width: view.frame.size.width, height: TOOLBAR_HEIGHT))
@@ -137,7 +149,6 @@ final class ViewController: UIViewController {
 
 	@objc
 	func sliderChanged(_ sender: UISlider) {
-		print(sender.value)
 		blurAmount = sender.value
 		updateImageDebounced()
 		delayedAction?.action {
