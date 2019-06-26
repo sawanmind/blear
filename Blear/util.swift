@@ -250,3 +250,97 @@ extension UIViewController {
 		return UIApplication.shared.windows.first!
 	}
 }
+
+
+
+public struct Stack<T> {
+	private var elements = [T]()
+	public init(){}
+	
+	public mutating func pop() -> T? {
+		return self.elements.popLast()
+	}
+	
+	public mutating func push(_ element:T...) {
+		self.elements.append(contentsOf: element)
+	}
+	
+	public func peek() -> T? {
+		return self.elements.last
+	}
+	
+	public var isEmpty: Bool {
+		return self.elements.isEmpty
+	}
+	
+	public var count :Int {
+		return self.elements.count
+	}
+	
+	
+}
+
+extension Stack :CustomStringConvertible, CustomDebugStringConvertible {
+	public var description: String {
+		return self.elements.description
+	}
+	
+	public var debugDescription: String{
+		return self.elements.debugDescription
+	}
+}
+
+
+
+struct Queue<T>{
+	
+	var items:[T] = []
+	
+	mutating func enqueue(_ element: T)
+	{
+		items.append(element)
+	}
+	
+	mutating func dequeue() -> T?
+	{
+		
+		if items.isEmpty {
+			return nil
+		}
+		else{
+			let tempElement = items.first
+			items.remove(at: 0)
+			return tempElement
+		}
+	}
+	
+	mutating func front() -> T?
+	{
+		
+		if !items.isEmpty {
+			return items.first
+		}else {
+			return nil
+		}
+		
+	}
+	
+	
+	var isEmpty: Bool { return self.items.isEmpty }
+	
+	func debugprint(){
+		print(items)
+	}
+	
+	mutating func getCurrentItems() -> [T]?
+	{
+		
+		if !items.isEmpty {
+			return items
+		}else {
+			return nil
+		}
+		
+	}
+	
+}

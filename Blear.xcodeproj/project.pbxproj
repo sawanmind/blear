@@ -8,6 +8,8 @@
 
 /* Begin PBXBuildFile section */
 		B4402B6BE736FE94384151F3 /* Pods_Blear.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 69A32EB0F984A04AB1CBE519 /* Pods_Blear.framework */; };
+		C9A5DDC522C31DB40018D45E /* FilterManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9A5DDC422C31DB40018D45E /* FilterManager.swift */; };
+		C9A5DDC922C388200018D45E /* Filter.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9A5DDC822C388200018D45E /* Filter.swift */; };
 		E33A6D501B2272B700CBEDC9 /* UIImageEffects.m in Sources */ = {isa = PBXBuildFile; fileRef = E33A6D4F1B2272B700CBEDC9 /* UIImageEffects.m */; };
 		E3430F431B27AD5800AF3F80 /* Bundled Photos in Resources */ = {isa = PBXBuildFile; fileRef = E3430F421B27AD5800AF3F80 /* Bundled Photos */; };
 		E38F930C189885370091DEAD /* LICENSE-MIT.txt in Resources */ = {isa = PBXBuildFile; fileRef = E38F9308189885370091DEAD /* LICENSE-MIT.txt */; };
@@ -23,6 +25,8 @@
 		69A32EB0F984A04AB1CBE519 /* Pods_Blear.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_Blear.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		6AAAF7C2359ED38C3A73F1A2 /* Pods-Blear.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Blear.release.xcconfig"; path = "Pods/Target Support Files/Pods-Blear/Pods-Blear.release.xcconfig"; sourceTree = "<group>"; };
 		85485F4EC63A600901518312 /* Pods-Blear.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Blear.debug.xcconfig"; path = "Pods/Target Support Files/Pods-Blear/Pods-Blear.debug.xcconfig"; sourceTree = "<group>"; };
+		C9A5DDC422C31DB40018D45E /* FilterManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FilterManager.swift; sourceTree = "<group>"; };
+		C9A5DDC822C388200018D45E /* Filter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Filter.swift; sourceTree = "<group>"; };
 		E33A6D4E1B2272B700CBEDC9 /* UIImageEffects.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UIImageEffects.h; sourceTree = "<group>"; };
 		E33A6D4F1B2272B700CBEDC9 /* UIImageEffects.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = UIImageEffects.m; sourceTree = "<group>"; };
 		E3430F421B27AD5800AF3F80 /* Bundled Photos */ = {isa = PBXFileReference; lastKnownFileType = folder; path = "Bundled Photos"; sourceTree = "<group>"; };
@@ -109,6 +113,8 @@
 			children = (
 				E3A0365917E5E7AE00892B76 /* AppDelegate.swift */,
 				E3A0367917E5E94E00892B76 /* ViewController.swift */,
+				C9A5DDC422C31DB40018D45E /* FilterManager.swift */,
+				C9A5DDC822C388200018D45E /* Filter.swift */,
 				E3A0368E17E6214500892B76 /* util.swift */,
 				E3A0365B17E5E7AE00892B76 /* Images.xcassets */,
 				E3A0365017E5E7AE00892B76 /* Supporting Files */,
@@ -259,7 +265,9 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "${PODS_ROOT}/SwiftLint/swiftlint\n";
+			shellScript = "
+";
+			showEnvVarsInLog = 0;
 		};
 /* End PBXShellScriptBuildPhase section */
 
@@ -268,11 +276,13 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				C9A5DDC922C388200018D45E /* Filter.swift in Sources */,
 				E3A0367A17E5E94E00892B76 /* ViewController.swift in Sources */,
 				E3A0365A17E5E7AE00892B76 /* AppDelegate.swift in Sources */,
 				E33A6D501B2272B700CBEDC9 /* UIImageEffects.m in Sources */,
 				E38F930D189885370091DEAD /* PerformSelectorWithDebounce.m in Sources */,
 				E3A0368F17E6214600892B76 /* util.swift in Sources */,
+				C9A5DDC522C31DB40018D45E /* FilterManager.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -396,6 +406,7 @@
 				GCC_PREFIX_HEADER = "";
 				GENERATE_PROFILING_CODE = NO;
 				INFOPLIST_FILE = Blear/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 11.4;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.sindresorhus.${PRODUCT_NAME:rfc1034identifier:lower}";
 				PRODUCT_NAME = Blear;
 				PROVISIONING_PROFILE = "";
@@ -422,6 +433,7 @@
 				GCC_PREFIX_HEADER = "";
 				GENERATE_PROFILING_CODE = YES;
 				INFOPLIST_FILE = Blear/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 11.4;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.sindresorhus.${PRODUCT_NAME:rfc1034identifier:lower}";
 				PRODUCT_NAME = Blear;
 				PROVISIONING_PROFILE = "";

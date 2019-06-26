@@ -11,12 +11,23 @@ let SCREEN_HEIGHT = UIScreen.main.bounds.size.height
 let IS_LARGE_SCREEN = IS_IPHONE && max(SCREEN_WIDTH, SCREEN_HEIGHT) >= 736.0
 
 final class ViewController: UIViewController {
-	var sourceImage: UIImage?
+	var sourceImage: UIImage? {
+		didSet {
+			self.imageModel = ImageModel(image: self.sourceImage!)
+		}
+	}
 	var delayedAction: IIDelayedAction?
 	var blurAmount: Float = 0
 	let stockImages = Bundle.main.urls(forResourcesWithExtension: "jpg", subdirectory: "Bundled Photos")!
 	lazy var randomImageIterator: AnyIterator<URL> = self.stockImages.uniqueRandomElement()
+	
+	var filterStack = Stack<FilterCategory>()
+	var filterQueue = Queue<FilterCategory>()
 
+	var imageModel: ImageModel?
+	let pendingOperations = PendingOperations()
+	
+	
 	lazy var imageView = with(UIImageView()) {
 		$0.image = UIImage(color: .black, size: view.frame.size)
 		$0.contentMode = .scaleAspectFill
@@ -28,6 +39,15 @@ final class ViewController: UIViewController {
 		let longGesture = UILongPressGestureRecognizer(target: self, action: #selector(handleShare))
 		longGesture.numberOfTouchesRequired = 1
 		$0.addGestureRecognizer(longGesture)
+		
+		let swipeRight = UISwipeGestureRecognizer(target: self, action: #selector(handleSwipGesture))
+		swipeRight.direction = .right
+		$0.addGestureRecognizer(swipeRight)
+		
+		let swipeLeft = UISwipeGestureRecognizer(target: self, action: #selector(handleSwipGesture))
+		swipeLeft.direction = .left
+		$0.addGestureRecognizer(swipeLeft)
+		
 		$0.frame = view.bounds
 	}
 
@@ -63,24 +83,11 @@ final class ViewController: UIViewController {
 		}
 	}
 	
-	@objc fileprivate func handleShare(_ sender:UILongPressGestureRecognizer) {
-		if let image = self.imageView.image {
-			let vc = UIActivityViewController(activityItems: [image], applicationActivities: [])
-			self.present(vc, animated: true)
-		}
-	}
 	
-	@objc fileprivate func handlePinchGesture(sender: UIPinchGestureRecognizer) {
-		guard let transformedView = (sender.view?.transform.scaledBy(x: sender.scale, y: sender.scale)) else {
-			return
-		}
-		sender.view?.transform = transformedView
-		sender.scale = 1.0
-	}
-
 	override func viewDidLoad() {
 		super.viewDidLoad()
-
+		
+		
 		// This is to ensure that it always ends up with the current blur amount when the slider stops
 		// since we're using `DispatchQueue.global().async` the order of events aren't serial
 		delayedAction = IIDelayedAction({}, withDelay: 0.2)
@@ -121,8 +128,19 @@ final class ViewController: UIViewController {
 
 		// Important that this is here at the end for the fading to work
 		randomImage()
+		loadFilterCategory()
 	}
 
+	override func viewWillDisappear(_ animated: Bool) {
+		super.viewWillDisappear(animated)
+		suspendAllOperations()
+	}
+	
+	override func viewWillAppear(_ animated: Bool) {
+		super.viewWillAppear(animated)
+		resumeAllOperations()
+	}
+	
 	@objc
 	func pickImage() {
 		let fdTake = FDTakeController()
@@ -135,7 +153,7 @@ final class ViewController: UIViewController {
 
 	func blurImage(_ blurAmount: Float) -> UIImage {
 		return UIImageEffects.imageByApplyingBlur(
-			to: sourceImage,
+			to: imageModel?.image,
 			withRadius: CGFloat(blurAmount * (IS_LARGE_SCREEN ? 0.8 : 1.2)),
 			tintColor: UIColor(white: 1, alpha: CGFloat(max(0, min(0.25, blurAmount * 0.004)))),
 			saturationDeltaFactor: CGFloat(max(1, min(2.8, blurAmount * (IS_IPAD ? 0.035 : 0.045)))),
@@ -230,4 +248,128 @@ final class ViewController: UIViewController {
 	func randomImage() {
 		changeImage(UIImage(contentsOf: randomImageIterator.next()!)!)
 	}
+	
+}
+
+
+extension ViewController {
+
+	fileprivate func loadFilterCategory(){
+		FilterCategory.allCases.forEach {
+			self.filterQueue.enqueue($0)
+		}
+	}
+	
+	@objc fileprivate func handleSwipGesture(_ sender:UISwipeGestureRecognizer){
+		switch sender.direction {
+		case .right:
+			self.applyFilterOnRightSwipe()
+			
+		case .left:
+			self.applyFilterOnLeftSwipe()
+			
+		default:
+			print("other swipe")
+		}
+	}
+	
+	@objc fileprivate func handleShare(_ sender:UILongPressGestureRecognizer) {
+		if let image = self.imageView.image {
+			let vc = UIActivityViewController(activityItems: [image], applicationActivities: [])
+			self.present(vc, animated: true)
+		}
+	}
+	
+	@objc fileprivate func handlePinchGesture(sender: UIPinchGestureRecognizer) {
+		guard let transformedView = (sender.view?.transform.scaledBy(x: sender.scale, y: sender.scale)) else {
+			return
+		}
+		sender.view?.transform = transformedView
+		sender.scale = 1.0
+	}
+	
+	func startOperations(for photoRecord: ImageModel,filterCategory: FilterCategory, at index: Int) {
+		switch (photoRecord.state) {
+		case .new:
+			startFiltration(for: photoRecord, filterCategory: filterCategory, at: index)
+		case .filtered:
+			self.imageView.image = photoRecord.image
+		default:
+			NSLog("do nothing")
+		}
+	}
+	
+	func startFiltration(for photoRecord: ImageModel, filterCategory: FilterCategory, at index: Int) {
+		guard pendingOperations.filtrationsInProgress[index] == nil else {
+			return
+		}
+		
+		let filterer = FilterManager(photoRecord, filterCategory: filterCategory)
+		filterer.completionBlock = {
+			if filterer.isCancelled {
+				return
+			}
+			DispatchQueue.main.async {
+				self.pendingOperations.filtrationsInProgress.removeValue(forKey: index)
+				photoRecord.state = .filtered
+				self.startOperations(for: photoRecord, filterCategory: filterCategory, at: index)
+			}
+		}
+		
+		pendingOperations.filtrationsInProgress[index] = filterer
+		pendingOperations.filtrationQueue.addOperation(filterer)
+	}
+
+	func suspendAllOperations() {
+		pendingOperations.filtrationQueue.isSuspended = true
+	}
+	
+	func resumeAllOperations() {
+		pendingOperations.filtrationQueue.isSuspended = false
+	}
+	
+	func startFilteringImage(_ filterCategory: FilterCategory) {
+		let allPendingOperations = Set(pendingOperations.filtrationsInProgress.keys)
+		let toBeCancelled = allPendingOperations
+		for indexPath in toBeCancelled {
+			if let pendingFiltration = pendingOperations.filtrationsInProgress[indexPath] {
+				pendingFiltration.cancel()
+			}
+			
+			pendingOperations.filtrationsInProgress.removeValue(forKey: indexPath)
+		}
+		
+		
+		guard let recordToProcess = self.imageModel else {return}
+		recordToProcess.state = .new
+		recordToProcess.image = self.sourceImage
+		startOperations(for: recordToProcess, filterCategory: filterCategory, at: 0)
+
+	}
+}
+
+
+extension ViewController {
+	
+	
+	fileprivate func applyFilterOnRightSwipe() {
+		print("left to right swipe")
+		if let element = self.filterStack.pop() {
+			self.startFilteringImage(element)
+		}else {
+			self.imageView.image = sourceImage
+			loadFilterCategory()
+		}
+		
+	}
+	
+	fileprivate func applyFilterOnLeftSwipe() {
+		print("right to left swipe")
+		if let element = filterQueue.dequeue() {
+			self.startFilteringImage(element)
+			self.filterStack.push(element)
+		}
+		
+	}
+	
 }
