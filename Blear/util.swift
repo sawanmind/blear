@@ -277,6 +277,9 @@ public struct Stack<T> {
 		return self.elements.count
 	}
 	
+	public mutating func clear() {
+		 self.elements.removeAll()
+	}
 	
 }
 
@@ -337,4 +340,7 @@ struct Queue<T>{
 		return self.items.count
 	}
 	
+	public mutating func clear() {
+		self.items.removeAll()
+	}
 }

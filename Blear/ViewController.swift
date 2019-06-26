@@ -147,6 +147,9 @@ final class ViewController: UIViewController {
 		fdTake.allowsVideo = false
 		fdTake.didGetPhoto = { photo, _ in
 			self.changeImage(photo)
+			self.filterStack.clear()
+			self.filterQueue.clear()
+			self.loadFilterCategory()
 		}
 		fdTake.present()
 	}
@@ -288,10 +291,10 @@ extension ViewController {
 		sender.scale = 1.0
 	}
 	
-	func startOperations(for photoRecord: ImageModel,filterCategory: FilterCategory, at index: Int) {
-		switch (photoRecord.state) {
+	func startOperations(for imageModel: ImageModel,filterCategory: FilterCategory, at index: Int) {
+		switch (imageModel.state) {
 		case .new:
-			startFiltration(for: photoRecord, filterCategory: filterCategory, at: index)
+			startFiltration(for: imageModel, filterCategory: filterCategory, at: index)
 		case .filtered:
 			self.updateImage()
 		default:
@@ -299,20 +302,20 @@ extension ViewController {
 		}
 	}
 	
-	func startFiltration(for photoRecord: ImageModel, filterCategory: FilterCategory, at index: Int) {
+	func startFiltration(for imageModel: ImageModel, filterCategory: FilterCategory, at index: Int) {
 		guard pendingOperations.filtrationsInProgress[index] == nil else {
 			return
 		}
 		
-		let filterer = FilterManager(photoRecord, filterCategory: filterCategory)
+		let filterer = FilterManager(imageModel, filterCategory: filterCategory)
 		filterer.completionBlock = {
 			if filterer.isCancelled {
 				return
 			}
 			DispatchQueue.main.async {
 				self.pendingOperations.filtrationsInProgress.removeValue(forKey: index)
-				photoRecord.state = .filtered
-				self.startOperations(for: photoRecord, filterCategory: filterCategory, at: index)
+				imageModel.state = .filtered
+				self.startOperations(for: imageModel, filterCategory: filterCategory, at: index)
 			}
 		}
 		
