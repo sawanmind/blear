@@ -153,7 +153,7 @@ final class ViewController: UIViewController {
 
 	func blurImage(_ blurAmount: Float) -> UIImage {
 		return UIImageEffects.imageByApplyingBlur(
-			to: imageModel?.image,
+			to: filterStack.isEmpty ? sourceImage : imageModel?.image,
 			withRadius: CGFloat(blurAmount * (IS_LARGE_SCREEN ? 0.8 : 1.2)),
 			tintColor: UIColor(white: 1, alpha: CGFloat(max(0, min(0.25, blurAmount * 0.004)))),
 			saturationDeltaFactor: CGFloat(max(1, min(2.8, blurAmount * (IS_IPAD ? 0.035 : 0.045)))),
@@ -293,7 +293,7 @@ extension ViewController {
 		case .new:
 			startFiltration(for: photoRecord, filterCategory: filterCategory, at: index)
 		case .filtered:
-			self.imageView.image = photoRecord.image
+			self.updateImage()
 		default:
 			NSLog("do nothing")
 		}
@@ -356,11 +356,9 @@ extension ViewController {
 		print("left to right swipe")
 		if let element = self.filterStack.pop() {
 			self.startFilteringImage(element)
-		}else {
-			self.imageView.image = sourceImage
-			loadFilterCategory()
+			self.filterQueue.enqueue(element)
 		}
-		
+
 	}
 	
 	fileprivate func applyFilterOnLeftSwipe() {

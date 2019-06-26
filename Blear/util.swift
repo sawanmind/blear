@@ -332,15 +332,9 @@ struct Queue<T>{
 		print(items)
 	}
 	
-	mutating func getCurrentItems() -> [T]?
-	{
-		
-		if !items.isEmpty {
-			return items
-		}else {
-			return nil
-		}
-		
+	
+	public var count :Int {
+		return self.items.count
 	}
 	
 }
