@@ -25,6 +25,9 @@ final class ViewController: UIViewController {
 		let pinchGesture = UIPinchGestureRecognizer(target: self, action: #selector(handlePinchGesture))
 		pinchGesture.scale = 1.0
 		$0.addGestureRecognizer(pinchGesture)
+		let longGesture = UILongPressGestureRecognizer(target: self, action: #selector(handleShare))
+		longGesture.numberOfTouchesRequired = 1
+		$0.addGestureRecognizer(longGesture)
 		$0.frame = view.bounds
 	}
 
@@ -57,6 +60,13 @@ final class ViewController: UIViewController {
 	override func motionEnded(_ motion: UIEvent.EventSubtype, with event: UIEvent?) {
 		if motion == .motionShake {
 			randomImage()
+		}
+	}
+	
+	@objc fileprivate func handleShare(_ sender:UILongPressGestureRecognizer) {
+		if let image = self.imageView.image {
+			let vc = UIActivityViewController(activityItems: [image], applicationActivities: [])
+			self.present(vc, animated: true)
 		}
 	}
 	
