@@ -13,7 +13,7 @@ let IS_LARGE_SCREEN = IS_IPHONE && max(SCREEN_WIDTH, SCREEN_HEIGHT) >= 736.0
 final class ViewController: UIViewController {
 	var sourceImage: UIImage?
 	var delayedAction: IIDelayedAction?
-	var blurAmount: Float = 50
+	var blurAmount: Float = 0
 	let stockImages = Bundle.main.urls(forResourcesWithExtension: "jpg", subdirectory: "Bundled Photos")!
 	lazy var randomImageIterator: AnyIterator<URL> = self.stockImages.uniqueRandomElement()
 
@@ -27,7 +27,7 @@ final class ViewController: UIViewController {
 	lazy var slider = with(UISlider()) {
 		let SLIDER_MARGIN: CGFloat = 120
 		$0.frame = CGRect(x: 0, y: 0, width: view.frame.size.width - SLIDER_MARGIN, height: view.frame.size.height)
-		$0.minimumValue = 10
+		$0.minimumValue = 0
 		$0.maximumValue = 100
 		$0.value = blurAmount
 		$0.isContinuous = true
@@ -137,6 +137,7 @@ final class ViewController: UIViewController {
 
 	@objc
 	func sliderChanged(_ sender: UISlider) {
+		print(sender.value)
 		blurAmount = sender.value
 		updateImageDebounced()
 		delayedAction?.action {
