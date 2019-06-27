@@ -252,7 +252,7 @@ extension UIViewController {
 }
 
 
-
+// MARK: Stack
 public struct Stack<T> {
 	private var elements = [T]()
 	public init(){}
@@ -294,7 +294,7 @@ extension Stack :CustomStringConvertible, CustomDebugStringConvertible {
 }
 
 
-
+// MARK: Queue
 struct Queue<T>{
 	
 	var items:[T] = []

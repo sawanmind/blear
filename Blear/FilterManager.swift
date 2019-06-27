@@ -10,11 +10,11 @@ import Foundation
 import UIKit
 import CoreImage
 import OpenGLES
-
+// MARK: Filter State
 enum FilterState {
     case new, filtered, failed
 }
-
+// MARK: Image Model
 class ImageModel {
     var state = FilterState.new
     var image : UIImage?
@@ -23,7 +23,7 @@ class ImageModel {
         self.image = image
     }
 }
-
+// MARK: Pending Operations
 class PendingOperations {
     lazy var filtrationsInProgress: [Int: Operation] = [:]
     lazy var filtrationQueue: OperationQueue = {
@@ -34,7 +34,7 @@ class PendingOperations {
 }
 
 
-
+// MARK: FilterManager Operations
 class FilterManager: Operation {
     let photoRecord: ImageModel
     var filterCategory : FilterCategory
@@ -65,7 +65,7 @@ class FilterManager: Operation {
         context = _context
     }
     
-    
+    // MARK: Applying filter
     func applyFilter(_ type:FilterCategory, _ image: UIImage) -> UIImage? {
         
         guard let data = image.pngData(),

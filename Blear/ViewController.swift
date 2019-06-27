@@ -4,6 +4,7 @@ import FDTake
 import IIDelayedAction
 import JGProgressHUD
 
+// MARK: Global constants
 let IS_IPAD = UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiom.pad
 let IS_IPHONE = UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiom.phone
 let SCREEN_WIDTH = UIScreen.main.bounds.size.width
@@ -11,6 +12,9 @@ let SCREEN_HEIGHT = UIScreen.main.bounds.size.height
 let IS_LARGE_SCREEN = IS_IPHONE && max(SCREEN_WIDTH, SCREEN_HEIGHT) >= 736.0
 
 final class ViewController: UIViewController {
+	
+	// MARK: Properties
+	
 	var sourceImage: UIImage? {
 		didSet {
 			self.imageModel = ImageModel(image: self.sourceImage!)
@@ -256,13 +260,13 @@ final class ViewController: UIViewController {
 
 
 extension ViewController {
-
+// MARK:  Load filters
 	fileprivate func loadFilterCategory(){
 		FilterCategory.allCases.forEach {
 			self.filterQueue.enqueue($0)
 		}
 	}
-	
+	// MARK:  Handle Swipe gesture
 	@objc fileprivate func handleSwipGesture(_ sender:UISwipeGestureRecognizer){
 		switch sender.direction {
 		case .right:
@@ -275,14 +279,14 @@ extension ViewController {
 			print("other swipe")
 		}
 	}
-	
+	// MARK:  Handle Share
 	@objc fileprivate func handleShare(_ sender:UILongPressGestureRecognizer) {
 		if let image = self.imageView.image {
 			let vc = UIActivityViewController(activityItems: [image], applicationActivities: [])
 			self.present(vc, animated: true)
 		}
 	}
-	
+	// MARK:  Handle Pinch gesture
 	@objc fileprivate func handlePinchGesture(sender: UIPinchGestureRecognizer) {
 		guard let transformedView = (sender.view?.transform.scaledBy(x: sender.scale, y: sender.scale)) else {
 			return
@@ -291,6 +295,7 @@ extension ViewController {
 		sender.scale = 1.0
 	}
 	
+	// MARK:  Starting operations
 	func startOperations(for imageModel: ImageModel,filterCategory: FilterCategory, at index: Int) {
 		switch (imageModel.state) {
 		case .new:
@@ -302,6 +307,7 @@ extension ViewController {
 		}
 	}
 	
+	// MARK:  Start Filterating
 	func startFiltration(for imageModel: ImageModel, filterCategory: FilterCategory, at index: Int) {
 		guard pendingOperations.filtrationsInProgress[index] == nil else {
 			return
@@ -323,13 +329,16 @@ extension ViewController {
 		pendingOperations.filtrationQueue.addOperation(filterer)
 	}
 
+	// MARK:  Suspend All operations
 	func suspendAllOperations() {
 		pendingOperations.filtrationQueue.isSuspended = true
 	}
 	
+	// MARK:  Resume All operations
 	func resumeAllOperations() {
 		pendingOperations.filtrationQueue.isSuspended = false
 	}
+	
 	
 	func startFilteringImage(_ filterCategory: FilterCategory) {
 		let allPendingOperations = Set(pendingOperations.filtrationsInProgress.keys)
@@ -354,7 +363,7 @@ extension ViewController {
 
 extension ViewController {
 	
-	
+	// MARK:  Filter on left to right swipe
 	fileprivate func applyFilterOnRightSwipe() {
 		print("left to right swipe")
 		if let element = self.filterStack.pop() {
@@ -364,6 +373,7 @@ extension ViewController {
 
 	}
 	
+	// MARK:  Filter on  right to left  swipe
 	fileprivate func applyFilterOnLeftSwipe() {
 		print("right to left swipe")
 		if let element = filterQueue.dequeue() {

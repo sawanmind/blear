@@ -11,7 +11,7 @@ import UIKit
 import CoreImage
 
 
-
+// MARK: Filter Category enum
 
 enum FilterCategory : String, CaseIterable {
     
